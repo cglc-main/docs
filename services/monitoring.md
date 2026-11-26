@@ -4,7 +4,7 @@ One chart, victoria-metrics-k8s-stack (`infra/clusters/prod/monitoring/`), all t
 
 | | Where |
 |---|---|
-| Grafana | `grafana.int.bulbashenko.com` (SSO; `infra-admins` are admins). Break-glass: `/login?disableAutoLogin`, Secret `grafana-admin`. |
+| Grafana | `grafana.int.bulbashenko.com` (SSO; `infra-admins` are admins). Break-glass: user `_admin` at `/login?disableAutoLogin`, Secret `grafana-admin`. |
 | Logs (VictoriaLogs, 14 days) | `logs.int.bulbashenko.com` (UI at `/select/vmui`) |
 | Requests and VPA recommendations | `goldilocks.int.bulbashenko.com` |
 | Flux | `flux.int.bulbashenko.com` |

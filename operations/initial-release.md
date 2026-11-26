@@ -74,14 +74,28 @@ Flux then applies everything in order (`clusters/prod/layers.yaml`). Watch with 
 
 ## 5. The two steps that need a person
 
-1. **The mesh.** `kubectl -n headscale exec deploy/headscale -- headscale users create nodes`, then
-   `... headscale preauthkeys create --user nodes --expiration 1h`, and on each node in order (cglc-1, cglc-2,
-   cglc-3, so they get 100.64.0.1–3): `tailscale up --login-server https://hs.bulbashenko.com --authkey <key>`.
-   Then your own device (signs in through the SSO once the next step is done). Set the repository variable
-   `SSH_FROM_MESH_ONLY=true` and apply tofu: SSH closes to the internet.
+1. **The nodes join the mesh**, one at a time in order (cglc-1, cglc-2, cglc-3), so they get 100.64.0.1–3: the
+   addresses k3s's certificate (`tls-san`) and the `*.int` records expect.
+
+   ```sh
+   h() { kubectl -n headscale exec deploy/headscale -c headscale -- headscale "$@"; }
+   h users create nodes                     # prints the user's ID; --user takes the ID, not the name
+   h preauthkeys create --user <ID> --reusable --expiration 15m
+   # on each node, in order:
+   tailscale up --login-server https://hs.bulbashenko.com --authkey <key> --accept-dns=false
+   h preauthkeys expire --id <key ID>       # h preauthkeys list
+   h nodes list                             # cglc-N → 100.64.0.N
+   ```
+
+   `--accept-dns=false`: the nodes keep their own resolver, which CoreDNS forwards to.
 2. **The first person**: `kubectl -n auth exec -it deploy/sso-ui -- node scripts/bootstrap-admin.mjs <username>
    <email> "<Name>"`, then on the link: password, passkey, authenticator app, recovery codes
-   ([contracts/auth.md](../contracts/auth.md)).
+   ([contracts/auth.md](../contracts/auth.md)). Use an email outside the cluster: recovery must work while the SSO
+   or the mail server is down.
+3. **Your device and SSH.** `tailscale up --login-server https://hs.bulbashenko.com` (signs in through the SSO).
+   Check `ssh root@100.64.0.1` and point the kubeconfig at the mesh (`server: https://100.64.0.1:6443`, no tunnel).
+   Then set the repository variable `SSH_FROM_MESH_ONLY=true` in infra and run `tofu.yml`: SSH closes to the
+   internet.
 
 ## 6. Checks
 
