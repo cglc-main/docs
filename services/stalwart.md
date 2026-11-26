@@ -2,7 +2,8 @@
 
 `mail.bulbashenko.com`: SMTP (25, submission 587 and 465), IMAP (993), JMAP, the account page (`/account`), and
 `autoconfig.`, `autodiscover.`, `mta-sts.` of the domain. The admin UI is at `mail.int.bulbashenko.com/admin`, from
-the mesh only; `/admin` on the public name redirects there.
+the mesh only; `/admin` on the public name redirects there, and `/` and `/account` on `mail.int` redirect to
+`/admin/` and to the public account page (the SSO client lists only these two web UI addresses).
 
 - **Runs:** namespace `stalwart`, one replica, tier-1 (`infra/clusters/prod/apps/stalwart/`). Moves to another node
   in about a minute; senders retry meanwhile.
