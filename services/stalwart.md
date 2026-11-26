@@ -20,5 +20,7 @@ the mesh only; `/admin` on the public name redirects there.
 - **The web UI** signs in as the public client `stalwart-webui` (the Application's `oauthClientId` in `plan.ndjson`;
   Hydra does not support Client ID Metadata Documents). The same id exists as a Stalwart `OAuthClient` for the
   recovery administrator. `oauthScopes` stays empty: the web UI sends those scopes to Hydra, which would reject them.
-- **noreply@bulbashenko.com** is a local account (password in the Secret `stalwart`) for Ory and Nextcloud.
+- **noreply@bulbashenko.com** sends the mail of Ory and Nextcloud. It signs in with an app password: the domain's
+  directory is the SSO, which checks no passwords. The app password is in the Secrets of its users (auth
+  `SMTP_CONNECTION_URI`, nextcloud `smtp-password`); rotation in [operations/secrets.md](../operations/secrets.md).
 - **Recovery administrator** `recovery` (Secret `stalwart`) is what the Job signs in as; people never use it.
