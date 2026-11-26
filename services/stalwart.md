@@ -9,7 +9,8 @@ the mesh only; `/admin` on the public name redirects there.
 - **Data:** settings and mail metadata in `pg` (database `stalwart`), message bodies on the Storage Box
   (sub-account `stalwart`).
 - **Configuration is code:** `plan.ndjson` (stalwart-cli plan; idempotent upserts), applied by the Job `config`
-  after every change. To start from what the UI shows: `stalwart-cli snapshot <Types> --output x.ndjson`.
+  after every change. The plan ends with the action `UpdateApps`: Stalwart renders the web UI with its
+  `oauthClientId` only at startup or on that action. To start from what the UI shows: `stalwart-cli snapshot <Types> --output x.ndjson`.
 - **TLS and DNS:** Stalwart gets its certificate itself (ACME DNS-01 at Cloudflare) and keeps its own records
   current: DKIM (Ed25519 and RSA, rotated), MTA-STS, TLS-RPT, SRV, autoconfig. MX, SPF, DMARC, CAA are in
   `tofu/dns.tf`; `mail.` resolves through the wildcard `*.bulbashenko.com` there. Each node's address has reverse
@@ -20,6 +21,8 @@ the mesh only; `/admin` on the public name redirects there.
 - **The web UI** signs in as the public client `stalwart-webui` (the Application's `oauthClientId` in `plan.ndjson`;
   Hydra does not support Client ID Metadata Documents). The same id exists as a Stalwart `OAuthClient` for the
   recovery administrator. `oauthScopes` stays empty: the web UI sends those scopes to Hydra, which would reject them.
+  Its sign-out carries no `id_token_hint`, which Hydra rejects; the auth route `stalwart-logout` (cglc-main/auth
+  `deploy/routes.yaml`) drops the parameters, so the session ends and the browser lands on the SSO's sign-in page.
 - **noreply@bulbashenko.com** sends the mail of Ory and Nextcloud. It signs in with an app password: the domain's
   directory is the SSO, which checks no passwords. The app password is in the Secrets of its users (auth
   `SMTP_CONNECTION_URI`, nextcloud `smtp-password`); rotation in [operations/secrets.md](../operations/secrets.md).
