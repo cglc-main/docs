@@ -47,12 +47,25 @@ Wait until `kubectl get nodes` shows the node Ready before the next one.
 
 ## 4. Flux
 
+The API (6443) is closed to the internet and the mesh comes later (step 5), so until then kubectl goes through an SSH
+tunnel to cglc-1. k3s's certificate already covers `127.0.0.1`, the address in its kubeconfig.
+
+```sh
+ssh root@<cglc-1 public IP> cat /etc/rancher/k3s/k3s.yaml > ~/.kube/cglc.yaml && chmod 600 ~/.kube/cglc.yaml
+ssh -fN -L 6443:127.0.0.1:6443 root@<cglc-1 public IP>
+export KUBECONFIG=$HOME/.kube/cglc.yaml   # fish: set -gx KUBECONFIG $HOME/.kube/cglc.yaml
+```
+
+From the `infra` repository (the same version as in `clusters/prod/flux-system/flux-operator.yaml`, so Flux takes
+over the release without changing it):
+
 ```sh
 kubectl create namespace flux-system
 # The cluster's age key only (the AGE-SECRET-KEY line under "# cglc-main" in ~/.config/sops/age/keys.txt).
-kubectl -n flux-system create secret generic sops-age --from-file=age.agekey=/dev/stdin <<< "$(grep -A3 '^# cglc-main' ~/.config/sops/age/keys.txt | grep '^AGE-SECRET-KEY')"
-helm install flux-operator oci://ghcr.io/controlplaneio-fluxcd/charts/flux-operator -n flux-system
-kubectl apply -f infra/clusters/prod/flux-system/flux-instance.yaml
+grep -A3 '^# cglc-main' ~/.config/sops/age/keys.txt | grep '^AGE-SECRET-KEY' \
+  | kubectl -n flux-system create secret generic sops-age --from-file=age.agekey=/dev/stdin
+helm install flux-operator oci://ghcr.io/controlplaneio-fluxcd/charts/flux-operator -n flux-system --version <version>
+kubectl -n flux-system apply -f clusters/prod/flux-system/flux-instance.yaml
 ```
 
 From then on Flux manages the operator and itself (`clusters/prod/flux-system/`).
