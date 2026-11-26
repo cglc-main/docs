@@ -9,7 +9,8 @@ the mesh only; `/admin` on the public name redirects there.
 - **Data:** settings and mail metadata in `pg` (database `stalwart`), message bodies on the Storage Box
   (sub-account `stalwart`).
 - **Configuration is code:** `plan.ndjson` (stalwart-cli plan; idempotent upserts), applied by the Job `config`
-  after every change. To start from what the UI shows: `stalwart-cli snapshot <Types> --output x.ndjson`.
+  after every change. The plan ends with the action `UpdateApps`: Stalwart renders the web UI with its
+  `oauthClientId` only at startup or on that action. To start from what the UI shows: `stalwart-cli snapshot <Types> --output x.ndjson`.
 - **TLS and DNS:** Stalwart gets its certificate itself (ACME DNS-01 at Cloudflare) and keeps its own records
   current: DKIM (Ed25519 and RSA, rotated), MTA-STS, TLS-RPT, SRV, autoconfig. MX, SPF, DMARC, CAA are in
   `tofu/dns.tf`; `mail.` resolves through the wildcard `*.bulbashenko.com` there. Each node's address has reverse
