@@ -5,7 +5,7 @@
    recovery link and code and hand them over in person. They set a password, a passkey and an authenticator app.
 2. **The mesh.** With `vpn-users`, they install Tailscale and run
    `tailscale up --login-server https://hs.bulbashenko.com`; signing in goes through the SSO. Then
-   `*.int.bulbashenko.com` (Grafana, Flux, logs, Goldilocks) opens for them.
+   `*.int.bulbashenko.com` (Grafana, Flux, logs, Goldilocks, mail admin, people admin) opens for them.
 3. **GitHub.** Add them to the organization cglc-main. Pull requests need the required checks; merging into `infra`
    applies to production.
 4. **Secrets** (only if they must edit them): add their age public key to `.sops.yaml` in infra and run

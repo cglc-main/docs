@@ -47,6 +47,10 @@ with the wrong group, they get 403.
 - issue a recovery link;
 - disable or delete them.
 
+**The local admin of a service** (break-glass) is named `_admin`. An SSO username always
+starts with a letter (Kratos identity schema), so an app that maps people by `preferred_username` can never sign a
+person into a local account.
+
 ## The cluster side (cglc-main/infra)
 
 1. **A directory** `clusters/prod/apps/<name>/` with its namespace and the component `components/defaults` (VPA sets
