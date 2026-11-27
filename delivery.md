@@ -41,7 +41,9 @@ PR (title: feat: / fix: / ...) ─► test (required) ─► merge (squash)
 - Every PR runs `validate`: every Kustomization builds and validates (kubeconform with CRD schemas), every secret is
   encrypted, OpenTofu formats and validates, workflows lint.
 - Renovate keeps charts, images (by digest), Actions, OpenTofu providers and k3s current: minor and patch updates
-  merge themselves after `validate`; majors wait for a person ([security.md](security.md)).
+  merge themselves after `validate`; majors wait for a person ([security.md](security.md)). A chart update waits
+  2 hours after its release: Flux reads chart repository indexes every hour, and a version missing from the index
+  stalls the HelmRelease until the next read.
 - **When Renovate runs.** Every 30 minutes, for every repository: the CronJob `flux-system/renovate-dispatch` in infra
   dispatches `renovate.yml` in `.github`, because GitHub drops most scheduled runs (the workflow's own schedule,
   every 3 hours, is only a fallback). An app release dispatches it at once. Runs and logs: the Actions tab of `.github`.
