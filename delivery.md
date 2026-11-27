@@ -42,6 +42,9 @@ PR (title: feat: / fix: / ...) ─► test (required) ─► merge (squash)
   encrypted, OpenTofu formats and validates, workflows lint.
 - Renovate keeps charts, images (by digest), Actions, OpenTofu providers and k3s current: minor and patch updates
   merge themselves after `validate`; majors wait for a person ([security.md](security.md)).
+- **When Renovate runs.** Every 30 minutes, for every repository: the CronJob `flux-system/renovate-dispatch` in infra
+  dispatches `renovate.yml` in `.github`, because GitHub drops most scheduled runs (the workflow's own schedule,
+  every 3 hours, is only a fallback). An app release dispatches it at once. Runs and logs: the Actions tab of `.github`.
 - Flux applies `main` (layers in `clusters/prod/layers.yaml`: CRDs → controllers → configs → monitoring and apps →
   releases). Failures reach Telegram.
 - **OpenTofu** (`tofu/`, `hosts/`): a PR gets the plan as a comment; after the merge, the apply waits for a person's
