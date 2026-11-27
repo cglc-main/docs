@@ -1,7 +1,8 @@
 # Monitoring
 
-One chart, victoria-metrics-k8s-stack (`infra/clusters/prod/monitoring/`), all tier-3 except the per-node agents
-(node-exporter, vlagent: `system-node-critical`).
+One chart, victoria-metrics-k8s-stack (`infra/clusters/prod/monitoring/`), tier-3 except the per-node agents
+(node-exporter, vlagent: `system-node-critical`) and the two stores pinned to a node by their volumes (vmsingle,
+vlsingle: `tier-2`).
 
 | | Where |
 |---|---|

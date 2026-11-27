@@ -54,21 +54,25 @@ The previous clusters failed by running out of memory. Here every layer is stand
    minor upgrade: `kubectl get --raw /api/v1/nodes/<node>/proxy/stats/summary`, system container `kubelet` (that is
    the whole k3s process). The scheduler and the pods' cgroup (`kubepods`) see only what is left: about 2 GB a node.
 2. **zram swap** (half the RAM, zstd) with kubelet's `LimitedSwap`.
-3. **VPA** sets every workload's requests from what it really uses when a pod is created (mode `Initial`: a deploy,
-   a drain or kured's reboot picks up the new value), and never touches limits. Not in place: kubelet refuses in-place
-   resize for containers with swap, and the fallback, eviction, never happens for single-replica workloads; such a
-   pod kept a raised request it was never given, and the scheduler counted it. The updater is off (`Initial` does not
-   use it). Memory requests follow each pod's typical daily peak (`--target-memory-percentile=0.5`, VPA's default is the
-   90th): pods peak at different times, and the sum of every pod's worst peak does not fit the nodes even though their
-   real use does. The margin on top is 5 % (default 15 %). A rarer peak is covered by zram and eviction in priority
-   order. Goldilocks creates the VPAs for every namespace with `components/defaults`, and shows them at
+3. **VPA** keeps every workload's requests at what it really uses, and never touches limits. Mode `Recreate`: the
+   updater recreates a pod whose request has drifted from the recommendation (outside the recommended range at once;
+   otherwise after 12 h when it is 10 % off), and the new pod gets the current recommendation. A single-replica pod
+   restarts for that, about a minute (`--min-replicas=1`; the default 2 never touched them, and most of ours have one
+   replica). Not in place: kubelet refuses in-place resize for containers with swap. Not `Initial` (requests only at pod
+   creation): requests went stale, the scheduler counted ~1.5 GiB more than pods used, and a pod pinned to its node
+   stayed Pending. Memory requests follow each pod's typical daily peak (`--target-memory-percentile=0.5`, VPA's default
+   is the 90th): pods peak at different times, and the sum of every pod's worst peak does not fit the nodes even though
+   their real use does. The margin on top is 5 % (default 15 %). A rarer peak is covered by zram and eviction in
+   priority order. Goldilocks creates the VPAs for every namespace with `components/defaults`, and shows them at
    `goldilocks.int.bulbashenko.com`. Postgres's pods belong to CloudNativePG, not to a Deployment, so they are not sized
    this way.
 4. **LimitRange** in every app namespace: no pod runs without requests.
 5. **Priorities.** `tier-1` (auth, site, Postgres, Stalwart, Headscale) stays; `tier-2` (the default: Nextcloud,
-   controllers) next; `tier-3` (monitoring) goes first. Its per-node agents (node-exporter, vlagent) are
+   controllers) next; `tier-3` (monitoring) goes first. Monitoring's per-node agents (node-exporter, vlagent) are
    `system-node-critical`: they cannot move to another node, so preempting them left a node without metrics and logs.
-   The descheduler (a CronJob every 10 minutes) spreads two-replica apps again once a lost node is back.
+   vmsingle and vlsingle are `tier-2` for the same reason: their local-path volumes pin them to one node, so they
+   preempt the rest of monitoring, which can move. The descheduler (a Deployment, every 10 minutes) spreads two-replica
+   apps again once a lost node is back.
 6. **Alerts**: the standard kube-prometheus rules (OOM kills, memory pressure, overcommit) reach Telegram.
 
 Watch real usage in Goldilocks and Grafana before adding anything heavy (Matrix is the next candidate).
