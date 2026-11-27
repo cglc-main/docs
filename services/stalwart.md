@@ -17,6 +17,8 @@ the mesh only; `/admin` on the public name redirects there, and `/` and `/accoun
   `tofu/dns.tf`; `mail.` resolves through the wildcard `*.bulbashenko.com` there. Each node's address has reverse
   DNS `cglc-N.bulbashenko.com` (outgoing mail leaves from the node Stalwart runs on).
 - **Ports:** Traefik passes them through with PROXY protocol v2; Stalwart listens on 2525/2587/2465/2993.
+  The pod network (`10.42.0.0/16`) is an `AllowedIp` in `plan.ndjson`, so Stalwart never auto-bans kubelet's probes
+  or Traefik.
 - **People** sign in through the SSO (group `mail-users`; `infra-admins` are its administrators). Phones without
   custom OAuth use an app password from the account page.
 - **The web UI** signs in as the public client `stalwart-webui` (the Application's `oauthClientId` in `plan.ndjson`;

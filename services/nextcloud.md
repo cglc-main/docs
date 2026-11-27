@@ -10,6 +10,9 @@
 - **Sign-in** through the SSO (`cloud-users`); the local admin `_admin` at `/login?direct=1` (Secret `nextcloud`).
 - **The site's media:** Team folder `Site` (`Gallery/`, `Files/`): `site-admins` write, the local user `site` reads.
 - **Cache and locks:** Valkey, no volume.
+- **Large uploads:** Traefik's `websecure` entry point allows 10 minutes per request body (`readTimeout`,
+  `infrastructure/controllers/releases/traefik.yaml`); the default 60 s cut the desktop client's 100 MB chunks on a
+  slow uplink.
 - **Upgrades:** one major at a time (Renovate groups chart and image; majors wait for a person). No rollback: fix
   forward.
 - **occ:** `kubectl -n nextcloud exec deploy/nextcloud -c nextcloud -- su -s /bin/sh www-data -c 'php occ <cmd>'`.
