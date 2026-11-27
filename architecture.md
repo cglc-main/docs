@@ -65,7 +65,7 @@ The previous clusters failed by running out of memory. Here every layer is stand
 5. **Priorities.** `tier-1` (auth, site, Postgres, Stalwart, Headscale) stays; `tier-2` (the default: Nextcloud,
    controllers) next; `tier-3` (monitoring) goes first. Its per-node agents (node-exporter, vlagent) are
    `system-node-critical`: they cannot move to another node, so preempting them left a node without metrics and logs.
-   The descheduler (a CronJob every 10 minutes) spreads two-replica apps again once a lost node is back.
+   The descheduler spreads two-replica apps again once a lost node is back.
 6. **Alerts**: the standard kube-prometheus rules (OOM kills, memory pressure, overcommit) reach Telegram.
 
 Watch real usage in Goldilocks and Grafana before adding anything heavy (Matrix is the next candidate).
