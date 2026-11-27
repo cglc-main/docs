@@ -62,8 +62,9 @@ The previous clusters failed by running out of memory. Here every layer is stand
    90th): pods peak at different times, and the sum of every pod's worst peak does not fit the nodes even though their
    real use does. The margin on top is 5 % (default 15 %). A rarer peak is covered by zram and eviction in priority
    order. Goldilocks creates the VPAs for every namespace with `components/defaults`, and shows them at
-   `goldilocks.int.bulbashenko.com`. Postgres's pods belong to CloudNativePG, not to a Deployment, so they are not sized
-   this way.
+   `goldilocks.int.bulbashenko.com`. vmsingle is the exception (VPA off): VictoriaMetrics sizes its caches from its
+   limit, so VPA would only follow the limit. Postgres's pods belong to CloudNativePG, not to a Deployment, so they are
+   not sized this way.
 4. **LimitRange** in every app namespace: no pod runs without requests.
 5. **Priorities.** `tier-1` (auth, site, Postgres, Stalwart, Headscale) stays; `tier-2` (the default: Nextcloud,
    controllers) next; `tier-3` (monitoring) goes first. Its per-node agents (node-exporter, vlagent) are
