@@ -47,8 +47,12 @@ No service keeps state on a node: a lost node loses nothing, and every pod can s
 
 The previous clusters failed by running out of memory. Here every layer is standard Kubernetes or a standard tool:
 
-1. **kubelet protects the node** (`hosts/cloud-init.yaml`): 1 GiB reserved for the system and k3s (GKE's formula),
-   and pods are evicted before the kernel's OOM killer could reach k3s or etcd.
+1. **kubelet protects the node** (`hosts/cloud-init.yaml`): 1750 MiB reserved for the system and k3s, and pods are
+   evicted before the kernel's OOM killer could reach k3s or etcd. The reserve is measured, not GKE's formula (that
+   one assumes the control plane runs elsewhere; here every node is a k3s server with etcd): k3s's memory without
+   page cache is 1.5–1.65 GB per node, close to the 1606 MB in k3s's own resource profiling. Check it after a k3s
+   minor upgrade: `kubectl get --raw /api/v1/nodes/<node>/proxy/stats/summary`, system container `kubelet` (that is
+   the whole k3s process). The scheduler and the pods' cgroup (`kubepods`) see only what is left: about 2 GB a node.
 2. **zram swap** (half the RAM, zstd) with kubelet's `LimitedSwap`.
 3. **VPA** sets every workload's requests from what it really uses, in place where possible, and never touches
    limits. Goldilocks creates the VPAs for every namespace with `components/defaults`, and shows them at
