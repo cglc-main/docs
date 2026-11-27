@@ -18,7 +18,7 @@ flowchart TB
 ```
 
 - **Nodes.** Three CX23 (2 vCPU, 4 GB, 40 GB) in one location, on three different physical hosts (placement group
-  `spread`). All three are k3s servers (control plane and etcd) and run workloads. Private network `10.0.1.0/24`;
+  `cluster`, type `spread`). All three are k3s servers (control plane and etcd) and run workloads. Private network `10.0.1.0/24`;
   pod traffic between nodes is encrypted (Flannel `wireguard-native`).
 - **Entry.** One Floating IPv4. keepalived on the nodes gives it to a node whose Traefik answers `/ping`, through the
   Hetzner API. Traefik runs on every node on the host network (it sees clients' real addresses) and implements the
