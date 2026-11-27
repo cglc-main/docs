@@ -54,8 +54,11 @@ The previous clusters failed by running out of memory. Here every layer is stand
    minor upgrade: `kubectl get --raw /api/v1/nodes/<node>/proxy/stats/summary`, system container `kubelet` (that is
    the whole k3s process). The scheduler and the pods' cgroup (`kubepods`) see only what is left: about 2 GB a node.
 2. **zram swap** (half the RAM, zstd) with kubelet's `LimitedSwap`.
-3. **VPA** sets every workload's requests from what it really uses, in place where possible, and never touches
-   limits. Memory requests follow each pod's typical daily peak (`--target-memory-percentile=0.5`, VPA's default is the
+3. **VPA** sets every workload's requests from what it really uses when a pod is created (mode `Initial`: a deploy,
+   a drain or kured's reboot picks up the new value), and never touches limits. Not in place: kubelet refuses in-place
+   resize for containers with swap, and the fallback, eviction, never happens for single-replica workloads; such a
+   pod kept a raised request it was never given, and the scheduler counted it. The updater is off (`Initial` does not
+   use it). Memory requests follow each pod's typical daily peak (`--target-memory-percentile=0.5`, VPA's default is the
    90th): pods peak at different times, and the sum of every pod's worst peak does not fit the nodes even though their
    real use does. The margin on top is 5 % (default 15 %). A rarer peak is covered by zram and eviction in priority
    order. Goldilocks creates the VPAs for every namespace with `components/defaults`, and shows them at
