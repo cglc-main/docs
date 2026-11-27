@@ -1,6 +1,7 @@
 # Monitoring
 
-One chart, victoria-metrics-k8s-stack (`infra/clusters/prod/monitoring/`), all tier-3.
+One chart, victoria-metrics-k8s-stack (`infra/clusters/prod/monitoring/`), all tier-3 except the per-node agents
+(node-exporter, vlagent: `system-node-critical`).
 
 | | Where |
 |---|---|

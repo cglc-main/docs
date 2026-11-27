@@ -55,13 +55,16 @@ The previous clusters failed by running out of memory. Here every layer is stand
    the whole k3s process). The scheduler and the pods' cgroup (`kubepods`) see only what is left: about 2 GB a node.
 2. **zram swap** (half the RAM, zstd) with kubelet's `LimitedSwap`.
 3. **VPA** sets every workload's requests from what it really uses, in place where possible, and never touches
-   limits. Goldilocks creates the VPAs for every namespace with `components/defaults`, and shows them at
-   `goldilocks.int.bulbashenko.com`. Postgres's pods belong to CloudNativePG, not to a Deployment, so they are not
-   sized this way.
+   limits. Memory requests follow each pod's typical daily peak (`--target-memory-percentile=0.5`, VPA's default is the
+   90th): pods peak at different times, and the sum of every pod's worst peak does not fit the nodes even though their
+   real use does. A rarer peak is covered by zram and eviction in priority order. Goldilocks creates the VPAs for every
+   namespace with `components/defaults`, and shows them at `goldilocks.int.bulbashenko.com`. Postgres's pods belong to
+   CloudNativePG, not to a Deployment, so they are not sized this way.
 4. **LimitRange** in every app namespace: no pod runs without requests.
 5. **Priorities.** `tier-1` (auth, site, Postgres, Stalwart, Headscale) stays; `tier-2` (the default: Nextcloud,
-   controllers) next; `tier-3` (monitoring) goes first. The descheduler spreads two-replica apps again once a lost
-   node is back.
+   controllers) next; `tier-3` (monitoring) goes first. Its per-node agents (node-exporter, vlagent) are
+   `system-node-critical`: they cannot move to another node, so preempting them left a node without metrics and logs.
+   The descheduler spreads two-replica apps again once a lost node is back.
 6. **Alerts**: the standard kube-prometheus rules (OOM kills, memory pressure, overcommit) reach Telegram.
 
 Watch real usage in Goldilocks and Grafana before adding anything heavy (Matrix is the next candidate).
